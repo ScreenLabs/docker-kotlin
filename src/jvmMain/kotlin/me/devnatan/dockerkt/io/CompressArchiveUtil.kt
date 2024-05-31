@@ -5,6 +5,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -15,6 +16,14 @@ import kotlin.io.path.name
 import kotlin.io.path.relativeTo
 
 internal object CompressArchiveUtil {
+    @Throws(IOException::class)
+    fun tar(input: ByteArray): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val tarOutputStream = TarArchiveOutputStream(byteArrayOutputStream)
+        tarOutputStream.write(input)
+        return byteArrayOutputStream.toByteArray()
+    }
+
     @Throws(IOException::class)
     fun tar(
         inputPath: Path,

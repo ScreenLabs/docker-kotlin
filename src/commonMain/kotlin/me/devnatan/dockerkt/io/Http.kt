@@ -20,9 +20,9 @@ import io.ktor.http.encodedPath
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import me.devnatan.dockerkt.GenericDockerErrorResponse
 import me.devnatan.dockerkt.DockerClient
 import me.devnatan.dockerkt.DockerResponseException
+import me.devnatan.dockerkt.GenericDockerErrorResponse
 
 internal expect fun <T : HttpClientEngineConfig> HttpClientConfig<out T>.configureHttpClient(client: DockerClient)
 

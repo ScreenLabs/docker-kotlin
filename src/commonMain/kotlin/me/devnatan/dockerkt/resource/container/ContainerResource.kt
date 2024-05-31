@@ -186,12 +186,38 @@ public expect class ContainerResource {
      * Uploads files into a container file system.
      *
      * @param container The container id.
-     * @param inputPath Path to the file that will be uploaded.
+     * @param inputPath Path to the file that will be compressed and uploaded.
      * @param remotePath Path to the file or directory inside the container file system.
      */
     public suspend fun uploadArchive(
         container: String,
         inputPath: String,
+        remotePath: String,
+    )
+
+    /**
+     * Uploads file bytes into a container file system.
+     *
+     * @param container The container id.
+     * @param input File bytes that will be compressed and uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public suspend fun uploadArchive(
+        container: String,
+        input: ByteArray,
+        remotePath: String,
+    )
+
+    /**
+     * Uploads files into a container file system.
+     *
+     * @param container The container id.
+     * @param input TAR GZipped file bytes that will be uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public suspend fun uploadArchiveRaw(
+        container: String,
+        input: ByteArray,
         remotePath: String,
     )
 }

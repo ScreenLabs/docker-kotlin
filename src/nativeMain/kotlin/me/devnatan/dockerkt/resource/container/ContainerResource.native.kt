@@ -211,4 +211,32 @@ public actual class ContainerResource {
         remotePath: String,
     ) {
     }
+
+    /**
+     * Uploads file bytes into a container file system.
+     *
+     * @param container The container id.
+     * @param input File bytes that will be compressed and uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public actual suspend fun uploadArchive(
+        container: String,
+        input: ByteArray,
+        remotePath: String,
+    ) {
+    }
+
+    /**
+     * Uploads files into a container file system.
+     *
+     * @param container The container id.
+     * @param input TAR GZipped file bytes that will be uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public actual suspend fun uploadArchiveRaw(
+        container: String,
+        input: ByteArray,
+        remotePath: String,
+    ) {
+    }
 }

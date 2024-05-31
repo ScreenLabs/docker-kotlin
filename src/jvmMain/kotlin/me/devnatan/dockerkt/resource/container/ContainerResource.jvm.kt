@@ -13,7 +13,6 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.util.cio.toByteReadChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.CoroutineScope
@@ -22,12 +21,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.io.RawSource
-import kotlinx.io.asInputStream
 import kotlinx.io.asSource
 import kotlinx.io.buffered
+import kotlinx.io.readByteArray
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import me.devnatan.dockerkt.DockerResponseException
+import me.devnatan.dockerkt.io.CompressArchiveUtil
 import me.devnatan.dockerkt.io.readTarFile
 import me.devnatan.dockerkt.io.requestCatching
 import me.devnatan.dockerkt.io.writeTarFile
@@ -442,7 +441,7 @@ public actual class ContainerResource(
      * @param container The container id to resize.
      * @param options Resize options like width and height.
      * @throws ContainerNotFoundException If the container is not found.
-     * @throws DockerResponseException If the container cannot be resized or if an error occurs in the request.
+     * @throws YokiResponseException If the container cannot be resized or if an error occurs in the request.
      */
     @JvmSynthetic
     public actual suspend fun resizeTTY(
@@ -468,7 +467,7 @@ public actual class ContainerResource(
      * @param container Unique identifier or name of the container.
      * @param options Resize options like width and height.
      * @throws ContainerNotFoundException If the container is not found.
-     * @throws DockerResponseException If the container cannot be resized or if an error occurs in the request.
+     * @throws YokiResponseException If the container cannot be resized or if an error occurs in the request.
      */
     @JvmOverloads
     public fun resizeTTYAsync(
@@ -573,14 +572,48 @@ public actual class ContainerResource(
         container: String,
         inputPath: String,
         remotePath: String,
+    ) {
+        val archive = writeTarFile(inputPath)
+        uploadArchiveRaw(
+            container,
+            archive.buffered().readByteArray(),
+            remotePath,
+        )
+    }
+
+    /**
+     * Uploads file bytes into a container file system.
+     *
+     * @param container The container id.
+     * @param input File bytes that will be compressed and uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public actual suspend fun uploadArchive(
+        container: String,
+        input: ByteArray,
+        remotePath: String,
+    ) {
+        val tarInput = CompressArchiveUtil.tar(input)
+        uploadArchive(container, tarInput, remotePath)
+    }
+
+    /**
+     * Uploads files into a container file system.
+     *
+     * @param container The container id.
+     * @param input TAR GZipped file bytes that will be uploaded.
+     * @param remotePath Path to the file or directory inside the container file system.
+     */
+    public actual suspend fun uploadArchiveRaw(
+        container: String,
+        input: ByteArray,
+        remotePath: String,
     ): Unit =
         requestCatching {
-            val archive = writeTarFile(inputPath)
-
             httpClient.put("$CONTAINERS/$container/archive") {
                 parameter("path", remotePath.ifEmpty { FS_ROOT })
                 parameter("noOverwriteDirNonDir", false)
-                setBody(archive.buffered().asInputStream().toByteReadChannel())
+                setBody(input)
             }
         }
 }
